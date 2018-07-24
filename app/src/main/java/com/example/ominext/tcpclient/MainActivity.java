@@ -4,10 +4,15 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ominext.tcpclient.socket.ConnectionCallBack;
@@ -18,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
     public static final String TAG = "MainActivity";
     private Button mBtnSend;
     private EditText mEdtMessage;
+    private TextView mTvData;
     private NetWorkReceiver netWorkReceiver = new NetWorkReceiver();
     private SocketClient mSocketClient;
 
@@ -31,15 +37,38 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
     }
 
     private void initViews() {
+        mTvData = findViewById(R.id.tvData);
         mBtnSend = findViewById(R.id.btnSend);
         mEdtMessage = findViewById(R.id.edtMessage);
+        mEdtMessage.requestFocus();
         mBtnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String data = mEdtMessage.getText().toString() + "\n";
-                mSocketClient.sendData(data.getBytes());
+                mTvData.append("CLIENT: " + data);
+                mTvData.requestLayout();
+                if (mSocketClient != null) {
+                    mSocketClient.sendData(data.getBytes());
+                } else {
+                    Toast.makeText(MainActivity.this, "Socket not connected", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem clear = menu.getItem(0);
+        clear.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                mTvData.setText("");
+                mTvData.requestLayout();
+                return false;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void registerNetWorkReceiver() {
@@ -99,9 +128,17 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
 
     @Override
     public void onReceiveData(byte[] b, int length) {
-        String data = new String(b, 0, length);
+        final String data = new String(b, 0, length);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTvData.append("SERVER: " + data + "\n");
+                mTvData.requestLayout();
+            }
+        });
+
         Log.i(TAG, data);
         Log.i(TAG, Thread.currentThread().getName());
-        toast(data);
+//        toast(data);
     }
 }

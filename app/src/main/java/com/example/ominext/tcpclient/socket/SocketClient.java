@@ -13,6 +13,7 @@ public class SocketClient {
     private static final String HOST = "192.168.4.1";
     private static final int PORT = 12000;
     private static final int TIME_OUT = 2000;
+
     private Socket socket;
     private InputStream is = null;
     private OutputStream os = null;
@@ -25,16 +26,11 @@ public class SocketClient {
     private Thread thread;
 
     public SocketClient() {
-        try {
-            connect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        connect();
     }
 
-    private void connect() throws IOException, InterruptedException {
+    private void connect() {
+
         reset();
         thread = new Thread(this.runnable);
         thread.start();
@@ -43,26 +39,37 @@ public class SocketClient {
         handler = new Handler(handlerThread.getLooper());
     }
 
-    private void reset() throws IOException, InterruptedException {
-        if (socket != null) {
-            socket.close();
-            socket = null;
+    public void reset() {
+        try {
+            mConnectionCallBack = null;
+            mOnDataListener = null;
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
+            is = null;
+            os = null;
+            isAlive = false;
+            isListening = false;
+            if (thread != null && thread.isAlive()) {
+                thread.join();
+                thread = null;
+            }
+            if (handler != null) {
+                handler = null;
+            }
+            if (handlerThread != null && handlerThread.isAlive()) {
+                handlerThread.join();
+                handlerThread = null;
+            }
+        } catch (IOException e) {
+            mConnectionCallBack.onException(e.getMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            mConnectionCallBack.onException(e.getMessage());
+            e.printStackTrace();
         }
-        is = null;
-        os = null;
-        isAlive = false;
-        isListening = false;
-        if (thread != null && thread.isAlive()) {
-            thread.join();
-            thread = null;
-        }
-        if (handler != null) {
-            handler = null;
-        }
-        if (handlerThread != null && handlerThread.isAlive()) {
-            handlerThread.join();
-            handlerThread = null;
-        }
+
     }
 
     private Runnable runnable = new Runnable() {
