@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
         });
     }
 
-
     @Override
     public void onAlive(String message) {
         Log.i(TAG, message);
