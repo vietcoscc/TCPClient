@@ -36,8 +36,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
         mBtnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                mSocketClient.sendData(mEdtMessage.getText().toString().getBytes());
+                String data = mEdtMessage.getText().toString() + "\n";
+                mSocketClient.sendData(data.getBytes());
             }
         });
     }
