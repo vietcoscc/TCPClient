@@ -19,30 +19,49 @@ public class SocketClient {
     private boolean isAlive;
     private ConnectionCallBack mConnectionCallBack;
     private OnDataListener mOnDataListener;
-    private boolean isListening = true;
+    private boolean isListening;
     private Handler handler;
     private HandlerThread handlerThread;
+    private Thread thread;
 
     public SocketClient() {
+        try {
+            connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void connect() throws IOException, InterruptedException {
+        reset();
+        thread = new Thread(this.runnable);
+        thread.start();
         handlerThread = new HandlerThread("SocketClient");
         handlerThread.start();
         handler = new Handler(handlerThread.getLooper());
-        connect();
     }
 
-    private void connect() {
-        Thread thread = new Thread(this.runnable);
-        thread.start();
-    }
-
-    private void initSocket() throws IOException {
+    private void reset() throws IOException, InterruptedException {
         if (socket != null) {
             socket.close();
             socket = null;
-            is = null;
-            os = null;
-            isAlive = false;
-            isListening = false;
+        }
+        is = null;
+        os = null;
+        isAlive = false;
+        isListening = false;
+        if (thread != null && thread.isAlive()) {
+            thread.join();
+            thread = null;
+        }
+        if (handler != null) {
+            handler = null;
+        }
+        if (handlerThread != null && handlerThread.isAlive()) {
+            handlerThread.join();
+            handlerThread = null;
         }
     }
 
@@ -50,7 +69,7 @@ public class SocketClient {
         @Override
         public void run() {
             try {
-                initSocket();
+
                 socket = new Socket();
                 InetSocketAddress endPoint = new InetSocketAddress(HOST, PORT);
                 socket.connect(endPoint, TIME_OUT);
