@@ -1,5 +1,8 @@
 package com.example.ominext.tcpclient.socket;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,28 +20,37 @@ public class SocketClient {
     private ConnectionCallBack mConnectionCallBack;
     private OnDataListener mOnDataListener;
     private boolean isListening = true;
+    private Handler handler;
+    private HandlerThread handlerThread;
 
     public SocketClient() {
+        handlerThread = new HandlerThread("SocketClient");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
         connect();
     }
 
-    public void connect() {
+    private void connect() {
         Thread thread = new Thread(this.runnable);
         thread.start();
+    }
+
+    private void initSocket() throws IOException {
+        if (socket != null) {
+            socket.close();
+            socket = null;
+            is = null;
+            os = null;
+            isAlive = false;
+            isListening = false;
+        }
     }
 
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
             try {
-                if (socket != null) {
-                    socket.close();
-                    socket = null;
-                    is = null;
-                    os = null;
-                    isAlive = false;
-                    isListening = false;
-                }
+                initSocket();
                 socket = new Socket();
                 InetSocketAddress endPoint = new InetSocketAddress(HOST, PORT);
                 socket.connect(endPoint, TIME_OUT);
@@ -67,7 +79,7 @@ public class SocketClient {
     };
 
     public void sendData(final byte b[]) {
-        (new Thread(new Runnable() {
+        runInBackground(new Runnable() {
             @Override
             public void run() {
                 if (isAlive && os != null) {
@@ -80,8 +92,13 @@ public class SocketClient {
                     }
                 }
             }
-        })).start();
+        });
+    }
 
+    private void runInBackground(Runnable runnable) {
+        if (handler != null) {
+            handler.post(runnable);
+        }
     }
 
     public void setConnectionCallBack(ConnectionCallBack mConnectionCallBack) {
