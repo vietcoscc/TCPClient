@@ -4,10 +4,8 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -138,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
         });
 
         Log.i(TAG, data);
-        Log.i(TAG, Thread.currentThread().getName());
+//        Log.i(TAG, Thread.currentThread().getName());
 //        toast(data);
     }
 }
