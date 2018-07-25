@@ -42,10 +42,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
         mBtnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String data = mEdtMessage.getText().toString() + "\n";
-                mTvData.append("CLIENT: " + data);
-                mTvData.requestLayout();
                 if (mSocketClient != null) {
+                    String data = mEdtMessage.getText().toString() + "\n";
+                    mTvData.append("CLIENT: " + data);
+                    mTvData.requestLayout();
                     mSocketClient.sendData(data.getBytes());
                 } else {
                     Toast.makeText(MainActivity.this, "Socket not connected", Toast.LENGTH_SHORT).show();
