@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionCallBac
                     mTvData.append("CLIENT: " + data);
                     mTvData.requestLayout();
                     mSocketClient.sendData(data.getBytes());
+                    mEdtMessage.setText("");
                 } else {
                     Toast.makeText(MainActivity.this, "Socket not connected", Toast.LENGTH_SHORT).show();
                 }
